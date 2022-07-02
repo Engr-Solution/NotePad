@@ -33,18 +33,22 @@ export default function CreateNoteForm({ note = null }) {
 
   const handleUpdateDoc = (_id = note._id) => {
     dispatch({ type: "CLOSE_MODAL" });
-console.log(_id)
 
-      let updateRef = doc(db, "notes", 'cCZg2kBun8WKm5lQNUl3')
+    let updateRef = doc(db, "notes", _id);
 
     updateDoc(updateRef, {
-      title: title,
-      notes: notes,
-      category: category,
-      _id: _id,
+      title,
+      notes,
+      category,
     })
       .then((res) => {
-        console.log(res);
+        dispatch({
+          type: "OPEN_ALERT",
+          payload: {
+            severity: "success",
+            message: "Note Successfully Update",
+          },
+        });
         window.location.reload();
       })
       .catch((err) => console.log(err));
@@ -63,7 +67,10 @@ console.log(_id)
       dateCreated: serverTimestamp(),
     })
       .then((res) => {
-        handleUpdateDoc(res.id);
+        updateDoc(doc(db, "notes", res.id), {
+          _id: res.id,
+        });
+
         console.log(res.id);
       })
       .catch((err) => {
