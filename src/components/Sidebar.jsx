@@ -46,7 +46,7 @@ export default function Sidebar({ children, showSidebar = true }) {
     return dispatch({ type: "DARKMODE_ON" });
   };
   const handleLogout = () => {
-    dispatch({ type: 'OPEN_DIALOG', payload: "Logout" });
+    dispatch({ type: "OPEN_DIALOG", payload: "Logout" });
   };
 
   return (

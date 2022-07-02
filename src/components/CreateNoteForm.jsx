@@ -1,55 +1,86 @@
-import { Cancel, Create, NotesRounded, Send } from "@mui/icons-material";
+import { Cancel, Create, Edit, NotesRounded, Send } from "@mui/icons-material";
 import {
   Box,
   Button,
   FormControl,
   FormControlLabel,
   FormLabel,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Radio,
   RadioGroup,
   TextField,
   Typography,
 } from "@mui/material";
 import React, { useState, useContext } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { app, db } from "../firebaseConfig";
 import NoteContext from "../context/NoteContext";
+import { v4 as uuidv4 } from "uuid";
+import { useNavigate } from "react-router-dom";
 
-export default function CreateNoteForm() {
-  const [title, setTitle] = useState("");
-  const [notes, setNotes] = useState("");
-  const [category, setCategory] = useState("tutorial");
-
-  const [userNotes, setUserNotes] = useState();
+export default function CreateNoteForm({ note = null }) {
+  const [title, setTitle] = useState(note != null ? note.title : "");
+  const [notes, setNotes] = useState(note != null ? note.notes : "");
+  const [category, setCategory] = useState(
+    note != null ? note.category : "tutorial",
+  );
 
   const { state, dispatch } = useContext(NoteContext);
   const { user } = state;
 
+  const navigate = useNavigate();
+
+  // const getId = () => {
+  //   if (note) {
+  //     const { _id } = note;
+  //     return _id;
+  //   }
+  // };
+
+  // let _id = getId();
+
+  const handleUpdateDoc = async (_id) => {
+    dispatch({ type: "CLOSE_MODAL" });
+
+    await updateDoc(doc(db, "notes", _id), {
+      title,
+      notes,
+      category,
+      _id,
+    })
+      .then((res) => {
+        console.log(res);
+        window.location.reload(); 
+      })
+      .catch((err) => console.log(err));
+  };
+
   const handleCreateNote = async (e) => {
     e.preventDefault();
+    dispatch({ type: "CLOSE_MODAL" });
+
     // Add a new document with a generated id.
     const data = await addDoc(collection(db, "notes"), {
       title,
       notes,
       category,
-      user: user,
-      time: new Date()
+      userId: user.uid,
+      dateCreated: serverTimestamp(),
     })
       .then((res) => {
-        alert('Note posted Successfully')
-        console.log(res)
+        handleUpdateDoc(res.id);
+        console.log(res.id);
       })
       .catch((err) => {
         console.log(err);
       });
   };
 
- 
   const handleClose = () => {
     dispatch({ type: "CLOSE_MODAL" });
   };
@@ -57,7 +88,15 @@ export default function CreateNoteForm() {
   return (
     <form onSubmit={handleCreateNote}>
       <Typography variant="h6" component="p">
-        Create a new Note <NotesRounded />{" "}
+        {note != null ? (
+          <>
+            Edit Note <Edit />{" "}
+          </>
+        ) : (
+          <>
+            Create a new Note <NotesRounded />{" "}
+          </>
+        )}
       </Typography>
       <TextField
         sx={{ mt: 2 }}
@@ -66,6 +105,7 @@ export default function CreateNoteForm() {
         required
         fullWidth
         onChange={(e) => setTitle(e.target.value)}
+        value={title}
       />
       <TextField
         sx={{ mt: 2 }}
@@ -76,6 +116,7 @@ export default function CreateNoteForm() {
         required
         fullWidth
         onChange={(e) => setNotes(e.target.value)}
+        value={notes}
       />
 
       <FormControl sx={{ display: "block", mt: 2 }}>
@@ -119,9 +160,9 @@ export default function CreateNoteForm() {
           type="submit"
           variant="contained"
           endIcon={<Send />}
-          onClick={handleCreateNote}
+          onClick={note != null ? { handleUpdateDoc } : { handleCreateNote }}
         >
-          Create
+          {note != null ? "Update" : "Create"}
         </Button>
       </Box>
     </form>

@@ -8,6 +8,9 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Slide from "@mui/material/Slide";
 import { getAuth, signOut } from "firebase/auth";
 import NoteContext from "../context/NoteContext";
+import { useNavigate, useParams } from "react-router-dom";
+import { deleteDoc, doc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -20,6 +23,13 @@ export default function ConfirmationDialog() {
     dialog: { isDialogOpen, dialogComponent },
   } = state;
 
+  // GET NOTE ID
+  const param = useParams();
+  const { noteId } = param;
+
+  const navigate = useNavigate();
+
+  // LOG USER OUT
   const handleLogout = () => {
     signOut(auth)
       .then(() => {
@@ -33,9 +43,31 @@ export default function ConfirmationDialog() {
     dispatch({ type: "CLOSE_DIALOG" });
   };
 
+  // DELETE POST
+  const handleDelete = async () => {
+    await deleteDoc(doc(db, "notes", noteId))
+      .then(
+        (res) =>
+          dispatch({
+            type: "OPEN_ALERT",
+            payload: {
+              severity: "success",
+              message: "Note Successfully Deleted",
+            },
+          }),
+        navigate(-1),
+      )
+      .catch((err) => console.log(err));
+
+    console.log(noteId);
+    navigate("/");
+    dispatch({ type: "CLOSE_DIALOG" });
+  };
+
   // CLOSE DIALOG
   const handleClose = () => {
     dispatch({ type: "CLOSE_DIALOG" });
+    console.log("close dialog");
   };
 
   return (
@@ -47,20 +79,24 @@ export default function ConfirmationDialog() {
         onClose={handleClose}
         aria-describedby="alert-dialog-slide-description"
       >
-        <DialogTitle>{"Logout"}</DialogTitle>
+        <DialogTitle>{dialogComponent}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-slide-description">
             {dialogComponent === "Logout"
               ? "Are you sure you want to logout?"
-              : null}
+              : "Are you sure you want to Delete this note?"}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>
-            {dialogComponent === "Logout" ? "No, Stall Logged In" : null}
+            {dialogComponent === "Logout"
+              ? "No, Stall Logged In"
+              : "No, Don't Delete"}
           </Button>
-          <Button onClick={dialogComponent === "Logout" ? handleLogout : null}>
-            {dialogComponent === "Logout" ? "Yes, Logout" : null}
+          <Button
+            onClick={dialogComponent == "Logout" ? handleLogout : handleDelete}
+          >
+            {dialogComponent === "Logout" ? "Yes, Logout" : "Yes, Delete"}
           </Button>
         </DialogActions>
       </Dialog>

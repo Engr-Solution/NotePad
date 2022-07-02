@@ -29,6 +29,7 @@ export default function ModalDiag() {
     dispatch({ type: "CLOSE_MODAL" });
   };
 
+
   return (
     <div>
       <Modal

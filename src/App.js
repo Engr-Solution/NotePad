@@ -14,7 +14,7 @@ function App() {
         <AnimatePresence exitBeforeEnter>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/notes/:id" element={<Note />} />
+            <Route path="/note/:noteId" element={<Note />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="reset-password" element={<ResetPassword />} />

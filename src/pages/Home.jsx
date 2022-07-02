@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import Masonry from "react-masonry-css";
 import "../assets/masory.css";
-import { notes } from "../assets/data";
 import NoteCard from "../components/Card";
 import Layout from "../components/Layout";
 import { motion } from "framer-motion";
@@ -9,6 +8,7 @@ import NoteContext from "../context/NoteContext";
 import { useNavigate } from "react-router-dom";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+import CardSkeleton from "../components/CardSkeleton";
 
 const breakpointColumnsObj = {
   default: 3,
@@ -28,7 +28,6 @@ function Home() {
       const data = await getDocs(collection(db, "notes"))
         .then((res) => {
           setNotes(res.docs);
-          console.log(res.docs);
         })
         .catch((err) => {
           console.log(err);
@@ -84,7 +83,7 @@ function Home() {
             ? notes.map((note, key) => (
                 <NoteCard note={note.data()} key={key} />
               ))
-            : "No Notes at the moment"}
+            : [125, 220, 180, 250, 150, 205].map((height, key) => <CardSkeleton height={height} key={key} />)}
         </Masonry>
       </motion.div>
     </Layout>

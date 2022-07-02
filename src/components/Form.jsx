@@ -31,7 +31,6 @@ function Form({ register }) {
   // CREATE NEW USER
   const handleCreateNewUser = ({ email, password, username }, e) => {
     e.preventDefault();
-
     createUserWithEmailAndPassword(auth, email, password)
       .then((data) => {
         // Signed up
@@ -73,7 +72,9 @@ function Form({ register }) {
     signInWithPopup(auth, githubProvider)
       .then((data) => {
         dispatch({ type: "ADD_USER", payload: data.user });
-        console.log(data.user);
+        console.log(data.user.uid);
+        console.log({...data.user});
+      
       })
       .catch((err) => console.log(err));
   };
