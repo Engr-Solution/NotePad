@@ -1,4 +1,4 @@
-import React, { useState, useContext, forwardRef } from "react";
+import React, { useContext, forwardRef } from "react";
 import Stack from "@mui/material/Stack";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -39,7 +39,7 @@ export default function AlertBox() {
         autoHideDuration={5000}
         onClose={handleClose}
       >
-        <Alert onClose={handleClose} severity={severity} sx={{ width: "100%" }}>
+        <Alert onClose={handleClose} severity={`${severity}`} sx={{ width: "100%" }}>
           {message}
         </Alert>
       </Snackbar>

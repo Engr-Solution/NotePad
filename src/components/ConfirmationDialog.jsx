@@ -45,23 +45,19 @@ export default function ConfirmationDialog() {
 
   // DELETE POST
   const handleDelete = async () => {
-    await deleteDoc(doc(db, "notes", noteId))
-      .then(
-        (res) =>
-          dispatch({
-            type: "OPEN_ALERT",
-            payload: {
-              severity: "success",
-              message: "Note Successfully Deleted",
-            },
-          }),
-        navigate(-1),
-      )
-      .catch((err) => console.log(err));
-
-    console.log(noteId);
-    navigate("/");
     dispatch({ type: "CLOSE_DIALOG" });
+    await deleteDoc(doc(db, "notes", noteId))
+      .then(() => {
+        dispatch({
+          type: "OPEN_ALERT",
+          payload: {
+            severity: "success",
+            message: "Note Successfully Deleted",
+          },
+        });
+      })
+      .catch((err) => console.log(err));
+    navigate("/");
   };
 
   // CLOSE DIALOG
@@ -94,7 +90,7 @@ export default function ConfirmationDialog() {
               : "No, Don't Delete"}
           </Button>
           <Button
-            onClick={dialogComponent == "Logout" ? handleLogout : handleDelete}
+            onClick={dialogComponent === "Logout" ? handleLogout : handleDelete}
           >
             {dialogComponent === "Logout" ? "Yes, Logout" : "Yes, Delete"}
           </Button>

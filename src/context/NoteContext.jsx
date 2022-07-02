@@ -8,7 +8,7 @@ const initialState = {
     isDialogOpen: false,
     dialogComponent: null,
   },
-  alert: { isAlertOpen: false, details: { severity: null, message: null } },
+  alert: { isAlertOpen: false, details: { severity: 'success', message: 'Successfully' } },
   mode: jsCookie.get("mode") || "light",
   user: jsCookie.get("user") ? JSON.parse(jsCookie.get("user")) : null,
 };
@@ -47,7 +47,7 @@ const reducer = (state, action) => {
         ...state,
         alert: {
           isAlertOpen: false,
-          details: { severity: null, message: null },
+          details: { severity: 'success', message: 'Successfully' },
         },
       };
     case "DARKMODE_ON":
@@ -64,8 +64,6 @@ const reducer = (state, action) => {
       };
     case "ADD_USER":
       jsCookie.set("user", JSON.stringify(action.payload));
-      // console.log(jsCookie.get("user"));
-      // console.log(JSON.parse(jsCookie.get("user")));
       return { ...state, user: action.payload };
     case "REMOVE_USER":
       jsCookie.remove("user");

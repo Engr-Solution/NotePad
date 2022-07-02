@@ -1,4 +1,4 @@
-import { Cancel, Create, Edit, NotesRounded, Send } from "@mui/icons-material";
+import { Cancel, Edit, NotesRounded, Send } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -18,10 +18,8 @@ import {
   updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import { app, db } from "../firebaseConfig";
+import { db } from "../firebaseConfig";
 import NoteContext from "../context/NoteContext";
-import { v4 as uuidv4 } from "uuid";
-import { useNavigate } from "react-router-dom";
 
 export default function CreateNoteForm({ note = null }) {
   const [title, setTitle] = useState(note != null ? note.title : "");
@@ -33,39 +31,31 @@ export default function CreateNoteForm({ note = null }) {
   const { state, dispatch } = useContext(NoteContext);
   const { user } = state;
 
-  const navigate = useNavigate();
-
-  // const getId = () => {
-  //   if (note) {
-  //     const { _id } = note;
-  //     return _id;
-  //   }
-  // };
-
-  // let _id = getId();
-
-  const handleUpdateDoc = async (_id) => {
+  const handleUpdateDoc = (_id = note._id) => {
     dispatch({ type: "CLOSE_MODAL" });
+console.log(_id)
 
-    await updateDoc(doc(db, "notes", _id), {
-      title,
-      notes,
-      category,
-      _id,
+      let updateRef = doc(db, "notes", 'cCZg2kBun8WKm5lQNUl3')
+
+    updateDoc(updateRef, {
+      title: title,
+      notes: notes,
+      category: category,
+      _id: _id,
     })
       .then((res) => {
         console.log(res);
-        window.location.reload(); 
+        window.location.reload();
       })
       .catch((err) => console.log(err));
   };
 
-  const handleCreateNote = async (e) => {
+  const handleCreateNote = (e) => {
     e.preventDefault();
     dispatch({ type: "CLOSE_MODAL" });
 
     // Add a new document with a generated id.
-    const data = await addDoc(collection(db, "notes"), {
+    addDoc(collection(db, "notes"), {
       title,
       notes,
       category,
@@ -86,7 +76,7 @@ export default function CreateNoteForm({ note = null }) {
   };
 
   return (
-    <form onSubmit={handleCreateNote}>
+    <form onSubmit={note === null ? handleCreateNote : handleUpdateDoc}>
       <Typography variant="h6" component="p">
         {note != null ? (
           <>
@@ -160,7 +150,6 @@ export default function CreateNoteForm({ note = null }) {
           type="submit"
           variant="contained"
           endIcon={<Send />}
-          onClick={note != null ? { handleUpdateDoc } : { handleCreateNote }}
         >
           {note != null ? "Update" : "Create"}
         </Button>
