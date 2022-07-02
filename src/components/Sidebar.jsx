@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useContext } from "react";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -10,113 +10,136 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import {
   AddCircleOutline,
-  CheckBox,
   Colorize,
-  Create,
+  DarkMode,
+  LightMode,
   Logout,
-  Note,
   NotesOutlined,
 } from "@mui/icons-material";
-import { Link } from "@mui/material";
-import { NavLink } from "react-router-dom";
+import { Switch } from "@mui/material";
+import CreateNoteForm from "./CreateNoteForm";
+import CustomTheme from "./CustomTheme";
+import { useNavigate, useLocation } from "react-router-dom";
+import NoteContext from "../context/NoteContext";
+import { getAuth, signOut } from "firebase/auth";
 
 const drawerWidth = 240;
-const menuItems = [
-  {
-    Text: "Theme",
-    Icon: <Colorize />,
-    Checkbox: false,
-    Action: "handleTheme",
-  },
-  {
-    Text: "Dark Mode",
-    Icon: <Note />,
-    Checkbox: true,
-    Action: "handleMode",
-  },
-];
 
-export default function ClippedDrawer({ children }) {
+export default function Sidebar({ children, showSidebar = true }) {
+  const auth = getAuth();
+  const { state, dispatch } = useContext(NoteContext);
+  const { mode } = state;
 
-  
-  const handleCreateNoteModal = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  const openModalNewNote = () => {
+    return dispatch({ type: "OPEN_MODAL", payload: <CreateNoteForm /> });
   };
-  const handleCreateForm = () => {
-    alert("Open form");
+  const openModalCustomTheme = () => {
+    return dispatch({ type: "OPEN_MODAL", payload: <CustomTheme /> });
+  };
+  const toggleDarkMode = () => {
+    if (mode === "dark") {
+      return dispatch({ type: "DARKMODE_OFF" });
+    }
+    return dispatch({ type: "DARKMODE_ON" });
   };
   const handleLogout = () => {
-    alert("Logout");
+    dispatch({ type: 'OPEN_DIALOG', payload: "Logout" });
   };
 
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          zIndex: 99,
-          [`& .MuiDrawer-paper`]: {
+      {showSidebar && (
+        <Drawer
+          variant="permanent"
+          sx={{
             width: drawerWidth,
-            boxSizing: "border-box",
-          },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ overflow: "auto" }}>
-          <List>
-            <Link underline="none">
-              <NavLink to="/">
-                <ListItem disablePadding>
-                  <ListItemButton sx={{ flex: "flex", alignItems: "center" }}>
-                    <ListItemIcon>
-                      <NotesOutlined />
-                    </ListItemIcon>
-                    <ListItemText primary="My Notes" />
-                  </ListItemButton>
-                </ListItem>
-              </NavLink>
-            </Link>
-
-            <ListItem disablePadding onClick={handleCreateNoteModal}>
-              <ListItemButton sx={{ flex: "flex", alignItems: "center" }}>
-                <ListItemIcon>
-                  <AddCircleOutline />
-                </ListItemIcon>
-                <ListItemText primary="Create Notes" />
-              </ListItemButton>
-            </ListItem>
-
-            {menuItems.map(({ Text, Icon, Checkbox, Action }, key) => (
-              <ListItem disablePadding onClick={() => Action()}>
+            flexShrink: 0,
+            zIndex: 99,
+            [`& .MuiDrawer-paper`]: {
+              width: drawerWidth,
+              boxSizing: "border-box",
+            },
+          }}
+        >
+          <Toolbar />
+          <Box sx={{ overflow: "auto" }}>
+            <List>
+              <ListItem
+                disablePadding
+                onClick={() => navigate("/")}
+                sx={{
+                  backgroundColor:
+                    location.pathname === "/" ? "text.active" : null,
+                }}
+              >
                 <ListItemButton sx={{ flex: "flex", alignItems: "center" }}>
-                  <ListItemIcon>{Icon}</ListItemIcon>
-                  <ListItemText primary={Text} />
-                  {Checkbox && <CheckBox />}
+                  <ListItemIcon>
+                    <NotesOutlined />
+                  </ListItemIcon>
+                  <ListItemText primary="My Notes" />
                 </ListItemButton>
               </ListItem>
-            ))}
-          </List>
 
-          <List sx={{ width: "100%", position: "absolute", bottom: 0 }}>
-            <ListItem
-              sx={{ color: "red" }}
-              onClick={handleLogout}
-              disablePadding
-            >
-              <ListItemButton>
-                <ListItemIcon>
-                  <Logout sx={{ color: "red" }} />
-                </ListItemIcon>
-                <ListItemText primary="Logout" />
-              </ListItemButton>
-            </ListItem>
-          </List>
-        </Box>
-      </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, px: 3, py: 2 }}>
+              <ListItem disablePadding onClick={openModalNewNote}>
+                <ListItemButton sx={{ flex: "flex", alignItems: "center" }}>
+                  <ListItemIcon>
+                    <AddCircleOutline />
+                  </ListItemIcon>
+                  <ListItemText primary="Create Notes" />
+                </ListItemButton>
+              </ListItem>
+
+              <ListItem disablePadding onClick={openModalCustomTheme}>
+                <ListItemButton sx={{ flex: "flex", alignItems: "center" }}>
+                  <ListItemIcon>
+                    <Colorize />
+                  </ListItemIcon>
+                  <ListItemText primary="Custom Theme" />
+                </ListItemButton>
+              </ListItem>
+
+              <ListItem disablePadding onClick={toggleDarkMode}>
+                <ListItemButton sx={{ flex: "flex", alignItems: "center" }}>
+                  <ListItemIcon>
+                    {mode === "dark" ? <DarkMode /> : <LightMode />}
+                  </ListItemIcon>
+                  <ListItemText primary="Dark Mode" />
+                  <Switch checked={mode === "dark" ? true : false} />
+                </ListItemButton>
+              </ListItem>
+            </List>
+
+            <List sx={{ width: "100%", position: "absolute", bottom: 0 }}>
+              <ListItem
+                sx={{ color: "red" }}
+                onClick={handleLogout}
+                disablePadding
+              >
+                <ListItemButton>
+                  <ListItemIcon>
+                    <Logout sx={{ color: "red" }} />
+                  </ListItemIcon>
+                  <ListItemText primary="Logout" />
+                </ListItemButton>
+              </ListItem>
+            </List>
+          </Box>
+        </Drawer>
+      )}
+
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          px: 3,
+          py: 2,
+          minHeight: "100vh",
+        }}
+      >
         <Toolbar />
         {children}
       </Box>

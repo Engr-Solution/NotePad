@@ -1,38 +1,66 @@
-import { Create, NotesRounded } from "@mui/icons-material";
+import { Cancel, Create, NotesRounded, Send } from "@mui/icons-material";
 import {
+  Box,
   Button,
   FormControl,
   FormControlLabel,
   FormLabel,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
   Radio,
   RadioGroup,
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
-// import { makeStyles } from '@mui/material/styles'
-
-// const useStyles = makeStyles({
-//   textField: {
-//     marginBottom: 4,
-//   },
-// })
+import React, { useState, useContext } from "react";
+import { collection, addDoc } from "firebase/firestore";
+import { app, db } from "../firebaseConfig";
+import NoteContext from "../context/NoteContext";
 
 export default function CreateNoteForm() {
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [category, setCategory] = useState("tutorial");
-  const [visibility, setVisibility] = useState("public");
 
-  // const classes = useStyles();
+  const [userNotes, setUserNotes] = useState();
+
+  const { state, dispatch } = useContext(NoteContext);
+  const { user } = state;
+
+  const handleCreateNote = async (e) => {
+    e.preventDefault();
+    // Add a new document with a generated id.
+    const data = await addDoc(collection(db, "notes"), {
+      title,
+      notes,
+      category,
+      user: user,
+      time: new Date()
+    })
+      .then((res) => {
+        alert('Note posted Successfully')
+        console.log(res)
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+ 
+  const handleClose = () => {
+    dispatch({ type: "CLOSE_MODAL" });
+  };
 
   return (
-    <form noValidate>
+    <form onSubmit={handleCreateNote}>
       <Typography variant="h6" component="p">
-        Create New Note <NotesRounded />{" "}
+        Create a new Note <NotesRounded />{" "}
       </Typography>
       <TextField
-        // className={classes.textField}
+        sx={{ mt: 2 }}
         variant="outlined"
         label="Note Title"
         required
@@ -40,15 +68,17 @@ export default function CreateNoteForm() {
         onChange={(e) => setTitle(e.target.value)}
       />
       <TextField
-        // className={classes.textField}
+        sx={{ mt: 2 }}
         variant="outlined"
         label="Notes"
+        multiline
+        rows={4}
         required
         fullWidth
         onChange={(e) => setNotes(e.target.value)}
       />
 
-      <FormControl>
+      <FormControl sx={{ display: "block", mt: 2 }}>
         <FormLabel>Note Category</FormLabel>
         <RadioGroup
           value={category}
@@ -69,26 +99,31 @@ export default function CreateNoteForm() {
         </RadioGroup>
       </FormControl>
 
-      <FormControl>
-        <FormLabel>Visibility</FormLabel>
-        <RadioGroup
-          value={visibility}
-          onChange={(e) => setVisibility(e.target.value)}
+      <Box sx={{ display: "flex", gap: 4 }}>
+        <Button
+          sx={{
+            display: "flex",
+            mt: 2,
+            px: 2,
+            backgroundColor: "red",
+          }}
+          type="submit"
+          variant="contained"
+          endIcon={<Cancel />}
+          onClick={handleClose}
         >
-          <FormControlLabel value="public" label="Public" control={<Radio />} />
-          <FormControlLabel
-            value="private"
-            label="Private"
-            control={<Radio />}
-          />
-        </RadioGroup>
-      </FormControl>
-
-      <Button type="submit" variant="contained" endIcon={<Create />}>
-        Create
-      </Button>
+          Cancel
+        </Button>
+        <Button
+          sx={{ display: "flex", mt: 2, px: 2 }}
+          type="submit"
+          variant="contained"
+          endIcon={<Send />}
+          onClick={handleCreateNote}
+        >
+          Create
+        </Button>
+      </Box>
     </form>
   );
 }
-
-
